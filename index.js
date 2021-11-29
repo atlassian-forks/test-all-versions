@@ -140,14 +140,23 @@ function test (opts, cb) {
 
     verbose('-- available package versions:', versions.join(', '))
 
+    // Convert the "latest" keyword to a latest version compatible as a semver
+    let versionsRange = opts.versions;
+
+    if (opts.versions.includes('latest')) {
+      const latestVersion = versions[versions.length -1];
+
+      versionsRange = versionsRange.replace(/latest/g, latestVersion);
+    }
+
     versions = versions.filter(function (version) {
-      return semver.satisfies(version, opts.versions)
+      return semver.satisfies(version, versionsRange)
     })
 
-    verbose('-- package versions matching "%s":', opts.versions, versions.join(', '))
+    verbose('-- package versions matching "%s":', versionsRange, versions.join(', '))
 
     if (versions.length === 0) {
-      console.warn('-- no versions of %s matching %s', opts.name, opts.versions)
+      console.warn('-- no versions of %s matching %s', opts.name, versionsRange)
       cb() // TODO: Would be nicer if this was a proper error, but that would be a breaking change. Consider it for the next major
       return
     }
